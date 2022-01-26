@@ -1,25 +1,83 @@
-const express = require('express')
+const express = require("express");
+const router = express.Router();
+const { NotFound, BadRequest } = require("http-errors");
+const Joi = require("joi");
 
-const router = express.Router()
+const contactsOperations = require("../../models/index");
 
-router.get('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+const joiSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().required(),
+  phone: Joi.string().required()
+});
 
-router.get('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.get("/", async (req, res, next) => {
+  try {
+    const result = await contactsOperations.listContacts();
+    res.json(result);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+});
 
-router.post('/', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.post("/", async (req, res, next) => {
+  try {
+    const { error } = joiSchema.validate(req.body);
+    if (error) {
+      throw new BadRequest("missing required name field");
+    }
+    const result = await contactsOperations.addContact(req.body);
+    res.status(201).json({
+      status: "success",
+      code: 201,
+      data: {
+        result
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
-router.delete('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.delete("/:contactId", async (req, res, next) => {
+  try {
+    const { contactId } = req.params;
+    const result = await contactsOperations.removeContact(contactId);
+    if (!result) {
+      throw new NotFound("Not found");
+    }
+    res.json({
+      status: "success",
+      code: 200,
+      message: "contact deleted"
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
-router.put('/:contactId', async (req, res, next) => {
-  res.json({ message: 'template message' })
-})
+router.put("/:contactId", async (req, res, next) => {
+  try {
+    const { error } = joiSchema.validate(req.body);
+    if (error) {
+      throw new BadRequest("missing fields");
+    }
+    const { contactId } = req.params;
+    const result = await contactsOperations.updateContact(contactId, req.body);
+    if (!result) {
+      throw new NotFound("Not found");
+    }
+    res.json({
+      status: "success",
+      code: 200,
+      data: {
+        result
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
-module.exports = router
+module.exports = router;
