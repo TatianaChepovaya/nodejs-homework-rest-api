@@ -21,26 +21,6 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/:contactId", async (req, res, next) => {
-  try {
-    const { contactId } = req.params;
-    console.log(contactId);
-    const result = await contactsOperations.getContactById(contactId);
-    if (!result) {
-      throw new NotFound("Not found");
-    }
-    res.json({
-      status: "success",
-      code: 200,
-      data: {
-        result
-      }
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
 router.post("/", async (req, res, next) => {
   try {
     const { error } = joiSchema.validate(req.body);
@@ -83,8 +63,8 @@ router.put("/:contactId", async (req, res, next) => {
     if (error) {
       throw new BadRequest("missing fields");
     }
-    const { id } = req.params;
-    const result = await contactsOperations.updateContact(id, req.body);
+    const { contactId } = req.params;
+    const result = await contactsOperations.updateContact(contactId, req.body);
     if (!result) {
       throw new NotFound("Not found");
     }
