@@ -1,4 +1,4 @@
-const { Contact } = require("../models/contacts");
+const { Contact } = require("../../models/contacts");
 const { NotFound } = require("http-errors");
 
 const getContactById = async (req, res) => {
@@ -15,4 +15,5 @@ const getContactById = async (req, res) => {
     }
   });
 };
+
 module.exports = getContactById;
